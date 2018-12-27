@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html>
+ <head> 
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /> 
+  
+  <title> 注册 </title> 
+  <link rel="stylesheet" href="style/css/base.css"  /> 
+  <link rel="stylesheet" href="style/css/login.css"  /> 
+
+  <script  type="text/javascript" src="style/js/jquery-1.7.1.min.js"></script> 
+
+
+  <!-- 验证码 -->
+  <style>
+  		.verify{
+			width: 95px;
+			position: absolute;
+			right: 0;
+			top: 0px;
+			cursor: pointer;
+			height: 46px;
+			font-size: 14px;
+			text-align: center;
+			line-height: 46px; 
+			background-color: rgb(50,165,231);
+			color: black;
+		}
+		::-webkit-scrollbar{
+			display:none;
+		}
+  </style>
+ 
+ 
+ 
+ </head> 
+ <body> 
+  <div id="content" class="content"> 
+
+  
+   <div class="banner-box"> 
+    <form id="mainForm" class="main-form" enctype="application/x-www-form-urlencoded" novalidate="novalidate"> 
+		 <div class="tab-title"> 
+		  <a class="linkAGray" id="toAccountLogin" href="login.html">账号登录</a> 
+		  <span class="register-line"></span> 
+		  <a class="linkABlue" id="toVCodeLogin" href="register.html">账号注册</a> 
+		 </div> 
+	
+		 <div id="errorMsg" class="tip-box visiblility-hidden"> 
+		  <i class="err-ico"></i> 
+		  <span class="tip-font" id="tipMsg" >请填写完整的注册信息</span> 
+		  <span id="closeErrorMsg" class="close-ico"></span> 
+		 </div> 
+
+		 
+		 <div class="normalInput cycode-box fieldInput" id="cycode-box"> 
+		  <div class="cycode-selectbox"> 
+		   <input class="ipt-account inp-focus" name="email" id="email" maxlength="50" placeholder="邮箱" autocomplete="off" onfocus="closeErrorMsg()" /> 
+		    
+		  </div> 
+		 </div> 
+		 <div class="normalInput fieldInput"> 
+		  <input type="text" class="inp-focus" name="Verificationcode" id="Verificationcode" maxlength="16" autocomplete="off" placeholder="验证码"  onfocus="closeErrorMsg()"/>
+		  <span id="verifyCode"  class="verify" onclick="sendsms(this);">获取验证码</span>
+		 </div> 
+
+		 
+
+		 <a id="register" class="fullBtnBlue">注册</a> 
+
+	 
+    </form> 
+	
+	
+	
+   </div> 
+  </div> 
+
+
+
+
+  <script>
+  	//点击注册事件
+  	$("#register").click(function(){  
+    		var email = $("#email").val();
+			var Verificationcode = $("#Verificationcode").val(); //输入的验证码
+
+			if( email=="" || Verificationcode==""){
+				var obj = document.getElementById("errorMsg");
+				$("#tipMsg").html("请填写完整的注册信息！");
+				obj.setAttribute("class", "tip-box visiblility-show");
+				return ;
+			}
+			//邮箱校验
+			var reg =/^[a-zA-Z0-9_-]+@[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)+$/;
+			var t = email.match(reg);
+			if( t == null ){
+				//提示错误信息
+				var obj = document.getElementById("errorMsg");
+				//修改提示文字
+				$("#tipMsg").html("请填写正确的邮箱！");
+				obj.setAttribute("class", "tip-box visiblility-show");
+				return ;
+			}
+			//发送ajax请求
+
+
+	});  
+
+  	//点击错误信息关闭按钮
+  	$("#closeErrorMsg").click(function(){
+			var obj = document.getElementById("errorMsg");
+			obj.setAttribute("class", "tip-box visiblility-hidden");
+  	});
+
+
+
+  	//关闭错误提示
+  	function closeErrorMsg(){
+  			var obj = document.getElementById("errorMsg");
+			obj.setAttribute("class", "tip-box visiblility-hidden");
+  	}
+
+
+    //发送验证码函数
+    function sendsms(e){
+    	var email = $("#email").val();
+    	if( email==""){
+			//提示错误信息
+			var obj = document.getElementById("errorMsg");
+			//修改提示文字
+			$("#tipMsg").html("请填写正确的邮箱！");
+			obj.setAttribute("class", "tip-box visiblility-show");
+			return ;
+    	}
+		//邮箱校验
+		var reg =/^[a-zA-Z0-9_-]+@[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)+$/;
+		var t = email.match(reg);
+		if( t == null ){
+			//提示错误信息
+			var obj = document.getElementById("errorMsg");
+			//修改提示文字
+			$("#tipMsg").html("请填写正确的邮箱！");
+			obj.setAttribute("class", "tip-box visiblility-show");
+			return ;
+		}
+
+
+
+    	//发送ajax请求，后台发送邮件
+		$.ajax({
+			  type: 'POST',
+			  url: 'register.action',
+			  data: 'email='+email
+		});
+
+
+        /*发送验证码功能*/
+        countdown(e);     //若发送验证码成功，则调用倒计时函数
+    }
+    //倒计时函数
+    var time = 5;
+    function countdown(e){
+         if (time == 0) {
+             e.setAttribute("onclick","sendsms(this)");
+             $("#verifyCode").html("获取验证码");
+             //颜色恢复
+             var mychar = document.getElementById("verifyCode");
+             mychar.style.backgroundColor  = "rgb(50,165,231)";
+             time = 5;
+         }else{
+             //设置背景为灰色
+             var mychar = document.getElementById("verifyCode");
+             mychar.style.backgroundColor  = "rgb(169,169,169)";
+
+             e.removeAttribute("onclick");
+             $("#verifyCode").html("重新发送(" + time + ")");
+             time--;
+             setTimeout(function() {
+                 countdown(e)
+             },1000)
+         }
+    }
+
+
+  </script>
+ </body>
+</html>
